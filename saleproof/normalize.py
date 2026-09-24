@@ -51,7 +51,7 @@ class ParsedTitle:
     @property
     def display(self) -> str:
         brand = BRAND_CASE.get(self.brand, self.brand.title())
-        model = " ".join(w.upper() if re.fullmatch(r"[a-z]{1,3}\d*|[a-z]?\d+[a-z]{0,2}", w) and w not in {"pro", "max", "air", "lite", "neo", "fan", "go"} else w.title() for w in self.model.split())
+        model = " ".join("iPhone" if w == "iphone" else "iPad" if w == "ipad" else w.upper() if re.fullmatch(r"[a-z]{1,3}\d*|[a-z]?\d+[a-z]{0,2}", w) and w not in {"pro", "max", "air", "lite", "neo", "fan", "go"} else w.title() for w in self.model.split())
         spec = "/".join(f"{x} GB" for x in (self.ram_gb, self.storage_gb) if x)
         if self.brand == "samsung" and not model.lower().startswith("galaxy"):
             model = f"Galaxy {model}"
@@ -89,6 +89,10 @@ def parse_memory(title: str) -> tuple[int | None, int | None]:
     return ram, storage
 
 
+MODEL_STOP = {"inch", "inches", "cm", "hd", "fhd", "display", "segment", "processor", "upto",
+              "battery", "camera", "octa", "dual", "sim", "snapdragon", "dimensity", "helio",
+              "android", "ios", "charging", "amoled", "lcd", "ai", "for", "in"}
+
 ACCESSORY = re.compile(
     r"\b(case|cover|tempered|screen guard|protector|motherboard|display combo|battery for|"
     r"charger for|back panel|housing|skin|sticker|replacement|spare|duplicate|dummy|toy)\b", re.I)
@@ -101,7 +105,15 @@ def parse_title(title: str) -> ParsedTitle:
     head = re.split(r"[(|,\[]| - | – ", title, maxsplit=1)[0]
     head = re.sub(_GB, " ", head, flags=re.I)
     words = [w for w in re.findall(r"[a-z0-9+]+", head.lower())]
-    words = [w for w in words if w not in NOISE and w not in COLOURS and w not in {"ram", "rom", "storage"}]
+    words = [w for w in words if w not in NOISE and w not in COLOURS
+             and w not in {"ram", "rom", "storage", "+"}]
+    for i, w in enumerate(words):  # specs start here: "6.7 inch", "7000mah", "segment ..."
+        if w in MODEL_STOP or re.fullmatch(r"\d+(mah|mp|hz|w)", w):
+            words = words[:i]
+            if w in {"inch", "inches", "cm"}:  # "6.7 inch" -> drop the "6 7" too
+                while words and re.fullmatch(r"\d{1,3}", words[-1]):
+                    words.pop()
+            break
     brand = ""
     if words and words[0] in KNOWN_BRANDS:
         brand = words.pop(0)
