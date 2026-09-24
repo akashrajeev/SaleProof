@@ -71,8 +71,8 @@
           <span class="muted small">{{ r.offer.store }} &middot; {{ r.category }}</span>
         </td>
         <td class="c-tag">{{ tag(r.offer) }}</td>
-        <td class="c-num mono">{{ r.offer.price|rupees }}</td>
-        <td class="c-num mono {% if r.verdict.real_pct is not none and r.verdict.real_pct < 0 %}up{% endif %}">
+        <td class="c-num c-price mono">{{ r.offer.price|rupees }}</td>
+        <td class="c-num c-real mono {% if r.verdict.real_pct is not none and r.verdict.real_pct < 0 %}up{% endif %}">
           {% if r.verdict.real_pct is not none %}{{ '%+.0f'|format(-r.verdict.real_pct) }}%{% else %}<span class="muted">&mdash;</span>{% endif %}
         </td>
         <td class="c-spark">{{ sparkline(r.days, r.offer.mrp)|safe }}</td>

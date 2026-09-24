@@ -171,6 +171,11 @@ def judge(history: list[DayPoint], offer: Offer, today_others: dict[str, float] 
             headline += f" Smaller than the {claimed:.0f}% on the tag, but real."
     else:
         verdict = FAIR
-        headline = f"About the usual price ({'+' if real < 0 else '-'}{abs(real):.0f}% vs {basis})."
+        if abs(real) < 1:
+            headline = f"Same as {basis}."
+        elif real > 0:
+            headline = f"{real:.0f}% below {basis}. Not enough to call it a deal."
+        else:
+            headline = f"{abs(real):.0f}% above {basis}."
 
     return Verdict(verdict, headline, offer.price, reference, claimed, real, len(past), flags)

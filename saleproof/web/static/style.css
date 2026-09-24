@@ -198,6 +198,15 @@ tr.untrusted td { color: var(--ink-3); }
   .loudest { border-left: 0; padding-left: 0; }
   .lead-story { grid-template-columns: 1fr; gap: 18px; }
   .c-spark, .rows th.c-spark, .c-tag, .rows th.c-tag { display: none; }
+  .ledger .rows thead { display: none; }
+  .ledger .rows, .ledger .rows tbody { display: block; width: 100%; }
+  .ledger .rows tr { display: grid; grid-template-columns: 1fr auto; column-gap: 12px;
+    padding: 12px 0; border-bottom: 1px solid var(--rule); }
+  .ledger .rows td { border: 0; padding: 0; }
+  .ledger .rows .c-name { grid-column: 1 / -1; width: auto; margin-bottom: 6px; }
+  .ledger .rows .c-price { text-align: left; }
+  .ledger .rows .c-real { display: none; }
+  .ledger .rows .c-v { justify-self: end; width: auto; }
   .versus { grid-template-columns: 1fr 1fr; }
   .vs-stamp { grid-column: 1 / -1; padding: 16px 0; }
   .foot-row { grid-template-columns: 1fr; gap: 10px; }
