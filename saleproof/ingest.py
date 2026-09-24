@@ -26,7 +26,8 @@ def _row(day, observed_at, engine, store, ref, title, price, mrp, **extra) -> di
         "store_ref": str(ref), "product_key": parsed.key, "title": title,
         "price": float(price), "mrp": float(mrp) if mrp else None,
         "claimed_pct": claimed_pct(price, mrp), "trusted": int(is_trusted(store)
-                                                              and not parsed.refurbished),
+                                                              and not parsed.refurbished
+                                                              and not parsed.accessory),
         "_parsed": parsed, **extra,
     }
 

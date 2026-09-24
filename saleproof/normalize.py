@@ -33,6 +33,7 @@ class ParsedTitle:
     ram_gb: int | None
     storage_gb: int | None
     refurbished: bool
+    accessory: bool = False
 
     @property
     def key(self) -> str:
@@ -43,6 +44,8 @@ class ParsedTitle:
             parts.append(f"{self.storage_gb}gb")
         if self.refurbished:
             parts.append("refurb")
+        if self.accessory:
+            parts.append("accessory")
         return "-".join(p.replace(" ", "-") for p in parts if p)
 
     @property
@@ -86,8 +89,14 @@ def parse_memory(title: str) -> tuple[int | None, int | None]:
     return ram, storage
 
 
+ACCESSORY = re.compile(
+    r"\b(case|cover|tempered|screen guard|protector|motherboard|display combo|battery for|"
+    r"charger for|back panel|housing|skin|sticker|replacement|spare|duplicate|dummy|toy)\b", re.I)
+
+
 def parse_title(title: str) -> ParsedTitle:
     refurb = bool(re.search(r"refurb|renewed|pre-?owned|used\b", title, re.I))
+    accessory = bool(ACCESSORY.search(title))
     ram, storage = parse_memory(title)
     head = re.split(r"[(|,\[]| - | – ", title, maxsplit=1)[0]
     head = re.sub(_GB, " ", head, flags=re.I)
@@ -103,7 +112,7 @@ def parse_title(title: str) -> ParsedTitle:
     if brand == "samsung" and words[:1] == ["galaxy"]:
         words = words[1:]
     model = " ".join(words[:5])
-    return ParsedTitle(brand, model, ram, storage, refurb)
+    return ParsedTitle(brand, model, ram, storage, refurb, accessory)
 
 
 def product_key(title: str) -> str:
