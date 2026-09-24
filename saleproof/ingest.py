@@ -88,6 +88,17 @@ def category_for(payload: dict) -> str:
     return "Phones" if "5g" in q else "Other"
 
 
+KEY_BY_MODEL = {"Phones"}  # phones: colours of one model share a history. Others: per listing.
+
+
+def clean_title(title: str, limit: int = 64) -> str:
+    import re
+    head = re.split(r"\s[|(]|, | - | – ", title, maxsplit=1)[0].strip()
+    if len(head) < 12:
+        head = title
+    return head if len(head) <= limit else head[: limit - 1].rsplit(" ", 1)[0] + "…"
+
+
 def ingest_payload(con: sqlite3.Connection, day: str, engine: str, payload: dict,
                    raw_file: str | None = None, category: str | None = None) -> int:
     parser = PARSERS.get(engine)
@@ -98,8 +109,12 @@ def ingest_payload(con: sqlite3.Connection, day: str, engine: str, payload: dict
     for row in parser(payload, day):
         parsed = row.pop("_parsed")
         row["raw_file"] = raw_file
+        display = parsed.display
+        if category not in KEY_BY_MODEL and engine == "amazon":
+            row["product_key"] = f"amazon-{row['store_ref'].lower()}"
+            display = clean_title(row["title"])
         db.upsert_offer(con, row)
-        db.upsert_product(con, row["product_key"], parsed.display, parsed.brand, category,
+        db.upsert_product(con, row["product_key"], display, parsed.brand, category,
                           row.get("thumbnail"))
         n += 1
     return n

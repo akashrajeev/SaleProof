@@ -42,3 +42,16 @@ def test_reingest_is_idempotent():
     for _ in range(2):
         ingest_payload(con, "2026-09-25", "amazon", load("amazon.json"), category="Phones")
     assert con.execute("SELECT count(*) FROM offers").fetchone()[0] == 12
+
+
+def test_non_phone_listings_keep_their_own_history():
+    payload = {"organic_results": [
+        {"asin": "B0TV000001", "title": "Philips 108 cm (43 inches) 4K Ultra HD Smart TV 43PUT7", "extracted_price": 21999, "extracted_old_price": 34990},
+        {"asin": "B0TV000002", "title": "Philips 80 cm (32 inches) HD Ready Smart TV 32PHT6", "extracted_price": 11999, "extracted_old_price": 19990},
+    ]}
+    con = db.connect(":memory:")
+    ingest_payload(con, "2026-09-25", "amazon", payload, category="TVs")
+    keys = {r[0] for r in con.execute("SELECT key FROM products")}
+    assert keys == {"amazon-b0tv000001", "amazon-b0tv000002"}
+    names = {r[0] for r in con.execute("SELECT display FROM products")}
+    assert "Philips 108 cm" in next(iter(sorted(names)))
