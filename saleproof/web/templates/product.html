@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% from "_macros.html" import stamp, tag %}
+{% block title %}{{ r.display }} · SaleProof{% endblock %}
+{% block main %}
+<p class="crumbs"><a href="/">Ledger</a> / <a href="/?c={{ r.category }}">{{ r.category }}</a></p>
+
+<section class="p-head">
+  <div>
+    <h1 class="p-title">{{ r.display }}</h1>
+    <p class="muted">{{ r.offer_title }}</p>
+  </div>
+  {% if r.thumbnail %}<img class="p-thumb" src="{{ r.thumbnail }}" alt="" loading="lazy">{% endif %}
+</section>
+
+<section class="versus">
+  <div class="vs-col">
+    <p class="label">{{ r.offer.store }}'s tag</p>
+    {% if r.offer.claimed_pct %}
+      <p class="vs-big strike-soft">{{ '%.0f'|format(r.offer.claimed_pct) }}% off</p>
+      <p class="mono">{{ r.offer.price|rupees }} <s class="muted">{{ r.offer.mrp|rupees }}</s></p>
+    {% else %}
+      <p class="vs-big muted">No discount shown</p>
+      <p class="mono">{{ r.offer.price|rupees }}</p>
+    {% endif %}
+  </div>
+  <div class="vs-col">
+    <p class="label">Against the usual price</p>
+    {% if r.verdict.real_pct is not none %}
+      <p class="vs-big">{% if r.verdict.real_pct >= 0 %}{{ '%.0f'|format(r.verdict.real_pct) }}% off{% else %}{{ '%.0f'|format(-r.verdict.real_pct) }}% more{% endif %}</p>
+      <p class="mono">usual {{ r.verdict.reference|rupees }}</p>
+    {% else %}
+      <p class="vs-big muted">Not yet known</p>
+      <p class="small muted">{{ r.days|length }} day{{ '' if r.days|length == 1 else 's' }} of prices so far</p>
+    {% endif %}
+  </div>
+  <div class="vs-stamp">{{ stamp(r.verdict, 'stamp-lg') }}</div>
+</section>
+<p class="headline">{{ r.verdict.headline }}</p>
+
+<figure class="chart-wrap">
+  {{ chart|safe }}
+  <figcaption>
+    <span class="key key-low"></span>lowest price at a trusted store, per day
+    {% if r.days|map(attribute='by_store')|map('length')|max > 1 %}<span class="key key-dot"></span>each store{% endif %}
+    {% if r.offer.mrp %}<span class="key key-mrp"></span>M.R.P. on the tag{% endif %}
+    {% if r.verdict.reference %}<span class="key key-ref"></span>usual price{% endif %}
+  </figcaption>
+</figure>
+
+{% if r.verdict.flags %}
+<section class="notes">
+  <h2 class="label">What we noticed</h2>
+  <ol>
+  {% for f in r.verdict.flags %}<li>{{ f.text }}</li>{% endfor %}
+  </ol>
+</section>
+{% endif %}
+
+<section class="evidence">
+  <h2 class="label">Every price we recorded</h2>
+  <table class="rows rows-tight">
+    <thead><tr><th>Day</th><th>Store</th><th class="c-num">Price</th><th class="c-num">M.R.P.</th><th class="c-num">Claimed</th><th>Source</th></tr></thead>
+    <tbody>
+    {% for o in offers %}
+      <tr class="{{ '' if o.trusted else 'untrusted' }}">
+        <td class="mono">{{ o.day[8:10] }}-{{ o.day[5:7] }}</td>
+        <td>{% if o.url %}<a href="{{ o.url }}" rel="nofollow noopener" target="_blank">{{ o.store }}</a>{% else %}{{ o.store }}{% endif %}{% if not o.trusted %} <span class="muted small">(not used)</span>{% endif %}</td>
+        <td class="c-num mono">{{ o.price|rupees }}</td>
+        <td class="c-num mono">{{ o.mrp|rupees if o.mrp else '—' }}</td>
+        <td class="c-num mono">{{ ('%.0f%%'|format(o.claimed_pct)) if o.claimed_pct else '—' }}</td>
+        <td class="small muted">{{ {'amazon':'Amazon Search','google_shopping':'Google Shopping','google_immersive_product':'Google product page'}[o.engine] }}{% if o.raw_file %} &middot; <code title="SerpApi search id">{{ o.raw_file[-8:] }}</code>{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

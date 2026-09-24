@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}How we judge · SaleProof{% endblock %}
+{% block main %}
+<article class="prose">
+<p class="kicker">Method</p>
+<h1>How SaleProof decides</h1>
+<p class="dek">Every Indian listing shows an M.R.P. and a percentage off it. The M.R.P. is set by the
+seller, so a big percentage can be made by raising the M.R.P. instead of lowering the price. We
+ignore the M.R.P. and look at what the product has actually cost.</p>
+
+<h2>1. Record prices every day</h2>
+<p>Once a day we ask SerpApi for Amazon.in search results in four categories and for Google Shopping
+India results on a few products that other stores also sell. We keep each full response, untouched.</p>
+
+<h2>2. Work out the usual price</h2>
+<p>For each product and day we take the lowest price at a trusted Indian store. The <b>usual
+price</b> is the median of those daily lows before today. Grey-market importers, spare-part sellers
+and refurbished listings are recorded but never used.</p>
+
+<h2>3. Compare the claim with reality</h2>
+<table class="rows rows-tight method-table">
+  <tr><td><span class="stamp stamp-fake stamp-sm">Fake discount</span></td><td>Claims 15% or more off, but the price is less than 5% below the usual price. Or the price was raised shortly before the offer.</td></tr>
+  <tr><td><span class="stamp stamp-genuine stamp-sm">Genuine deal</span></td><td>At least 10% below the usual price, whatever the tag says.</td></tr>
+  <tr><td><span class="stamp stamp-fair stamp-sm">Normal price</span></td><td>Within a few percent of the usual price.</td></tr>
+  <tr><td><span class="stamp stamp-unsure stamp-sm">Too early to tell</span></td><td>Fewer than three days of prices and no other store to compare with.</td></tr>
+</table>
+
+<h2>4. Flag the tricks we can see</h2>
+<ul>
+  <li><b>M.R.P. nobody charges</b> &mdash; the M.R.P. is 25% or more above the highest price any trusted store has asked.</li>
+  <li><b>Different M.R.P. at different stores</b> for the same product.</li>
+  <li><b>Raised before the sale</b> &mdash; the price climbed 8% or more in the days before an offer.</li>
+  <li><b>Cheaper elsewhere</b> &mdash; another trusted store is at least 5% cheaper today.</li>
+</ul>
+
+<h2>What this can't see</h2>
+<p>Bank-card offers, exchange bonuses and coupons applied at checkout are not in the listing price.
+Prices can change several times a day; we sample once. Different sellers on the same marketplace can
+price one product differently.</p>
+</article>
+{% endblock %}

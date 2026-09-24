@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}SaleProof{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+<header class="mast">
+  <div class="wrap mast-row">
+    <a class="wordmark" href="/">Sale<em>Proof</em></a>
+    <nav class="mast-nav">
+      <a href="/" {% if request.url.path == '/' %}aria-current="page"{% endif %}>Ledger</a>
+      <a href="/method" {% if request.url.path == '/method' %}aria-current="page"{% endif %}>How we judge</a>
+    </nav>
+    <p class="dateline">{{ today.strftime('%A, %-d %B %Y') }}</p>
+  </div>
+  {% if event %}
+  <div class="countdown">
+    <div class="wrap">
+      {% for e in events if e.starts >= today %}
+        <span><b>{{ e.short }}</b> starts {{ e.starts.strftime('%-d %b') }}
+        {%- set n = (e.starts - today).days %} &middot; {{ n }} day{{ '' if n == 1 else 's' }} away</span>
+      {% endfor %}
+      <span class="countdown-note">Recording the "before" prices now.</span>
+    </div>
+  </div>
+  {% endif %}
+</header>
+<main class="wrap">
+{% block main %}{% endblock %}
+</main>
+<footer class="foot">
+  <div class="wrap foot-row">
+    <p>Prices collected once a day through <a href="https://serpapi.com">SerpApi</a>
+      (Amazon Search on amazon.in, Google Shopping India). Every raw response is kept in
+      <code>data/raw</code>, so any verdict can be checked against the page as it was that day.</p>
+    <p>Not affiliated with any store. Prices can change within the day.</p>
+  </div>
+</footer>
+</body>
+</html>

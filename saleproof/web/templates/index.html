@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% from "_macros.html" import stamp, tag %}
+{% block main %}
+<section class="lede">
+  <div class="lede-text">
+    <p class="kicker">Day {{ sm.days }} of tracking &middot; {{ sm.products }} products</p>
+    <h1>{% if n_claims %}{{ n_claims }} listings say you're saving an average of <em>{{ avg_claim }}%</em>.{% else %}Nothing tracked yet.{% endif %}</h1>
+    <p class="dek">A discount is only as honest as the price it's measured from. Stores measure from
+      their own M.R.P.; SaleProof measures from what the product actually sold for on the days
+      before. When the two disagree, you see it here.</p>
+    {% if sm.days < 3 %}
+    <p class="note">Verdicts need at least three days of prices. Until then most products read
+      <i>too early to tell</i> &mdash; that's the honest answer, not a bug.</p>
+    {% endif %}
+  </div>
+  <aside class="loudest">
+    <h2 class="label">Loudest tags today</h2>
+    <ol>
+    {% for r in loudest %}
+      <li>
+        <a href="/p/{{ r.key }}">{{ r.display }}</a>
+        <div class="loud-row">{{ tag(r.offer) }} <span class="now">{{ r.offer.price|rupees }}</span></div>
+        <div class="muted small">{{ r.offer.store }} &middot; {{ stamp(r.verdict, 'stamp-sm') }}</div>
+      </li>
+    {% endfor %}
+    </ol>
+  </aside>
+</section>
+
+{% if lead %}
+<section class="lead-story">
+  <div>
+    <p class="kicker">Biggest gap so far</p>
+    <h2><a href="/p/{{ lead.key }}">{{ lead.display }}</a></h2>
+    <p>{{ lead.verdict.headline }}</p>
+  </div>
+  <div class="lead-numbers">
+    <div><span class="label">Tag says</span><span class="big strike">{{ '%.0f'|format(lead.verdict.claimed_pct) }}%</span></div>
+    <div><span class="label">Actually</span><span class="big">{{ '%.0f'|format(lead.verdict.real_pct) }}%</span></div>
+  </div>
+  {{ stamp(lead.verdict, 'stamp-lg') }}
+</section>
+{% endif %}
+
+<section class="ledger">
+  <div class="ledger-head">
+    <nav class="tabs" aria-label="Category">
+      <a href="/{{ '?v=' ~ vfilter if vfilter else '' }}" {% if not cat %}aria-current="true"{% endif %}>All</a>
+      {% for c in categories %}
+      <a href="/?c={{ c }}{{ '&v=' ~ vfilter if vfilter else '' }}" {% if cat == c %}aria-current="true"{% endif %}>{{ c }}</a>
+      {% endfor %}
+    </nav>
+    <nav class="tabs tabs-v" aria-label="Verdict">
+      {% for key, label in [('fake','Fake'),('genuine','Genuine'),('fair','Normal'),('unsure','Too early')] %}
+      <a href="/?{{ 'c=' ~ cat ~ '&' if cat else '' }}v={{ key }}" class="dot-{{ key }}" {% if vfilter == key %}aria-current="true"{% endif %}>{{ label }} <span class="count">{{ sm.counts.get(key, 0) }}</span></a>
+      {% endfor %}
+      {% if vfilter %}<a href="/{{ '?c=' ~ cat if cat else '' }}" class="clear">clear</a>{% endif %}
+    </nav>
+  </div>
+
+  <table class="rows">
+    <thead>
+      <tr><th class="c-name">Product</th><th class="c-tag">The tag says</th><th class="c-num">Price</th>
+          <th class="c-num">vs usual</th><th class="c-spark">History</th><th class="c-v">Verdict</th></tr>
+    </thead>
+    <tbody>
+    {% for r in reports %}
+      <tr>
+        <td class="c-name">
+          <a href="/p/{{ r.key }}" class="pname">{{ r.display }}</a>
+          <span class="muted small">{{ r.offer.store }} &middot; {{ r.category }}</span>
+        </td>
+        <td class="c-tag">{{ tag(r.offer) }}</td>
+        <td class="c-num mono">{{ r.offer.price|rupees }}</td>
+        <td class="c-num mono {% if r.verdict.real_pct is not none and r.verdict.real_pct < 0 %}up{% endif %}">
+          {% if r.verdict.real_pct is not none %}{{ '%+.0f'|format(-r.verdict.real_pct) }}%{% else %}<span class="muted">&mdash;</span>{% endif %}
+        </td>
+        <td class="c-spark">{{ sparkline(r.days, r.offer.mrp)|safe }}</td>
+        <td class="c-v">{{ stamp(r.verdict, 'stamp-sm') }}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="6" class="empty">No products match.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

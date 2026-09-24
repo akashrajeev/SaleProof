@@ -1,0 +1,9 @@
+{% macro stamp(v, size='') -%}
+<span class="stamp stamp-{{ v.verdict }} {{ size }}">{{ v.label }}</span>
+{%- endmacro %}
+
+{% macro tag(offer) -%}
+{% if offer.mrp and offer.claimed_pct %}
+<span class="tag"><s>{{ offer.mrp|rupees }}</s> <b>{{ '%.0f'|format(offer.claimed_pct) }}% off</b></span>
+{% else %}<span class="tag tag-none">no discount shown</span>{% endif %}
+{%- endmacro %}
