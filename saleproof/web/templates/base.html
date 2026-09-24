@@ -16,6 +16,7 @@
     <a class="wordmark" href="/">Sale<em>Proof</em></a>
     <nav class="mast-nav">
       <a href="/" {% if request.url.path == '/' %}aria-current="page"{% endif %}>Ledger</a>
+      <a href="/sale" {% if request.url.path == '/sale' %}aria-current="page"{% endif %}>Sale report</a>
       <a href="/method" {% if request.url.path == '/method' %}aria-current="page"{% endif %}>How we judge</a>
     </nav>
     <p class="dateline">{{ today.strftime('%A, %-d %B %Y') }}</p>

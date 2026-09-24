@@ -202,3 +202,18 @@ tr.untrusted td { color: var(--ink-3); }
   .vs-stamp { grid-column: 1 / -1; padding: 16px 0; }
   .foot-row { grid-template-columns: 1fr; gap: 10px; }
 }
+
+/* store comparison */
+.stores { margin: 26px 0 0; padding-top: 18px; border-top: 1px solid var(--rule); }
+.store-bars { list-style: none; margin: 0; padding: 0; max-width: 640px; }
+.store-bars li { display: grid; grid-template-columns: 140px 1fr 90px; gap: 14px; align-items: center; padding: 5px 0; }
+.sb-bar { height: 8px; background: var(--paper-2); }
+.sb-bar i { display: block; height: 100%; background: var(--ink); }
+.store-bars li:first-child .sb-bar i { background: var(--genuine); }
+.store-bars .mono { text-align: right; }
+
+/* sale report */
+.sale-head { padding: 40px 0 24px; border-bottom: 1px solid var(--rule); }
+.sale-head h1 { font: 50px/1.05 var(--serif); margin: 0 0 12px; max-width: 18ch; }
+.stats { display: flex; gap: 48px; flex-wrap: wrap; padding: 22px 0; border-bottom: 1px solid var(--rule); }
+.stat .big { display: block; }

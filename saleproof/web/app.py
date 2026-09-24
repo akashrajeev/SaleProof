@@ -69,11 +69,25 @@ def product(request: Request, key: str):
     ev = next_event(_today())
     chart = history_chart(r.days, r.offer.mrp, r.verdict.reference,
                           sale_start=ev.starts if ev else None)
-    offers = con.execute(
+    rows = con.execute(
         "SELECT day, store, price, mrp, claimed_pct, url, engine, raw_file, trusted, title "
         "FROM offers WHERE product_key=? ORDER BY day DESC, price", (key,)).fetchall()
+    # one line per day and store: the cheapest listing, plus how many colour variants it beat
+    grouped: dict[tuple, dict] = {}
+    for o in rows:
+        g = grouped.setdefault((o["day"], o["store"], o["engine"]), {**dict(o), "variants": 0})
+        g["variants"] += 1
+    offers = list(grouped.values())
+    stores_today = sorted(r.stores_today.items(), key=lambda kv: kv[1])
     return templates.TemplateResponse(request, "product.html", _ctx(
-        request, r=r, chart=chart, offers=offers))
+        request, r=r, chart=chart, offers=offers, stores_today=stores_today))
+
+
+@app.get("/sale", response_class=HTMLResponse)
+def sale(request: Request):
+    from ..sale import sale_report
+    return templates.TemplateResponse(request, "sale.html", _ctx(
+        request, rep=sale_report(_con(), _today())))
 
 
 @app.get("/method", response_class=HTMLResponse)

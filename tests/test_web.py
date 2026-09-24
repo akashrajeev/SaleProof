@@ -57,3 +57,22 @@ def test_api(client):
 
 def test_method_page(client):
     assert "How SaleProof decides" in client.get("/method").text
+
+
+def test_sale_page_before_sale(client):
+    r = client.get("/sale")
+    assert r.status_code == 200
+    assert "before" in r.text
+
+
+def test_sale_report_after_open():
+    from datetime import date
+    from saleproof.sale import sale_report
+    con = db.connect(":memory:")
+    payload = json.loads((FX / "amazon.json").read_text())
+    for day in ("2026-09-28", "2026-09-30", "2026-10-02", "2026-10-07"):
+        ingest_payload(con, day, "amazon", payload, category="Phones")
+    rep = sale_report(con, date(2026, 10, 7))
+    assert rep.started and rep.event.store == "Amazon"
+    assert rep.baseline_days == 3  # 7 Oct is the first sale day, not baseline
+    assert any(x.key == "redmi-a7-pro-4gb-128gb" for x in rep.rows)

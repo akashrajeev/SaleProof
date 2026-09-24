@@ -47,6 +47,20 @@
   </figcaption>
 </figure>
 
+{% if stores_today|length > 1 %}
+<section class="stores">
+  <h2 class="label">Today at each store</h2>
+  <ul class="store-bars">
+  {% set top = stores_today[-1][1] %}
+  {% for store, price in stores_today %}
+    <li><span class="sb-name">{{ store }}</span>
+      <span class="sb-bar"><i style="width: {{ (price / top * 100)|round(1) }}%"></i></span>
+      <span class="mono">{{ price|rupees }}</span></li>
+  {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
 {% if r.verdict.flags %}
 <section class="notes">
   <h2 class="label">What we noticed</h2>
@@ -65,7 +79,7 @@
       <tr class="{{ '' if o.trusted else 'untrusted' }}">
         <td class="mono">{{ o.day[8:10] }}-{{ o.day[5:7] }}</td>
         <td>{% if o.url %}<a href="{{ o.url }}" rel="nofollow noopener" target="_blank">{{ o.store }}</a>{% else %}{{ o.store }}{% endif %}{% if not o.trusted %} <span class="muted small">(not used)</span>{% endif %}
-          <div class="small muted variant">{{ o.title[:70] }}</div></td>
+          {% if o.variants > 1 %}<div class="small muted">cheapest of {{ o.variants }} colour listings</div>{% endif %}</td>
         <td class="c-num mono">{{ o.price|rupees }}</td>
         <td class="c-num mono">{{ o.mrp|rupees if o.mrp else '—' }}</td>
         <td class="c-num mono">{{ ('%.0f%%'|format(o.claimed_pct)) if o.claimed_pct else '—' }}</td>

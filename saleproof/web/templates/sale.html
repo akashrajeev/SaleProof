@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Sale report · SaleProof{% endblock %}
+{% block main %}
+<section class="sale-head">
+  <p class="kicker">{{ rep.event.name }}</p>
+  {% if not rep.started %}
+  <h1>The sale opens {{ (rep.event.early or rep.event.starts).strftime('%-d %B') }}. The "before" prices are being written down now.</h1>
+  <p class="dek">When it opens, this page lists every tracked product with its sale price next to the
+    median price from {{ rep.baseline_from.strftime('%-d %b') }} to {{ rep.baseline_to.strftime('%-d %b') }},
+    and the discount the tag claims.</p>
+  {% else %}
+  <h1>Sale prices against the fortnight before.</h1>
+  <p class="dek">Baseline: median lowest price at trusted stores, {{ rep.baseline_from.strftime('%-d %b') }}&ndash;{{ rep.baseline_to.strftime('%-d %b') }}.</p>
+  {% endif %}
+</section>
+<section class="stats">
+  <div class="stat"><span class="label">Products with a baseline</span><span class="big">{{ rep.baseline_products }}</span></div>
+  <div class="stat"><span class="label">Baseline days recorded</span><span class="big">{{ rep.baseline_days }}<span class="muted"> / 14</span></span></div>
+  {% if rep.started %}<div class="stat"><span class="label">Compared today</span><span class="big">{{ rep.rows|length }}</span></div>{% endif %}
+</section>
+{% if rep.started %}
+<table class="rows">
+  <thead><tr><th>Product</th><th class="c-num">Before sale</th><th class="c-num">Sale price</th><th class="c-num">Tag says</th><th class="c-num">Really</th><th class="c-v">Verdict</th></tr></thead>
+  <tbody>
+  {% for x in rep.rows %}
+  <tr>
+    <td><a class="pname" href="/p/{{ x.key }}">{{ x.display }}</a><span class="muted small">{{ x.store }}</span></td>
+    <td class="c-num">{{ x.baseline|rupees }}</td>
+    <td class="c-num">{{ x.sale_price|rupees }}</td>
+    <td class="c-num">{{ ('%.0f%%'|format(x.claimed_pct)) if x.claimed_pct else '—' }}</td>
+    <td class="c-num {% if x.real_pct < 0 %}up{% endif %}">{{ '%.0f'|format(x.real_pct) }}%</td>
+    <td class="c-v"><span class="stamp stamp-{{ x.verdict }} stamp-sm">{{ x.label }}</span></td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}
