@@ -63,7 +63,7 @@ class SerpClient:
         return len(list(folder.glob("*.json.gz"))) if folder.exists() else 0
 
     # -- calls -----------------------------------------------------------------------------
-    def search(self, engine: str, **params: Any) -> dict[str, Any]:
+    def search(self, engine: str, _meta: dict | None = None, **params: Any) -> dict[str, Any]:
         """Fetch once per day per request. Re-running the same day replays the archive for free."""
         path = self.archive_path(engine, params)
         if path.exists():
@@ -79,6 +79,7 @@ class SerpClient:
         if resp.status_code != 200 or data.get("error"):
             raise SerpApiError(data.get("error") or f"HTTP {resp.status_code}")
         data.setdefault("saleproof", {})["fetched_at"] = self.clock().isoformat()
+        data["saleproof"].update(_meta or {})
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(gzip.compress(json.dumps(data, ensure_ascii=False).encode()))
         return data

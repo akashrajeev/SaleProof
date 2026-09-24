@@ -65,9 +65,17 @@ def history_chart(days: list[DayPoint], mrp: float | None, reference: float | No
     out = [f'<svg class="chart" viewBox="0 0 {w} {h}" role="img" '
            f'aria-label="Daily lowest price history">']
 
-    # horizontal guides
-    for i in range(4):
-        v = lo + (hi - lo) * i / 3
+    # horizontal guides on round numbers
+    raw_step = (hi - lo) / 3
+    mag = 10 ** max(len(str(int(raw_step))) - 1, 0)
+    step = next(m * mag for m in (1, 2, 2.5, 5, 10) if m * mag >= raw_step)
+    lo = (lo // step) * step
+    ticks = []
+    v = lo
+    while v <= hi:
+        ticks.append(v)
+        v += step
+    for v in ticks:
         out.append(f'<line x1="{left}" x2="{w - right}" y1="{y(v):.1f}" y2="{y(v):.1f}" class="grid"/>')
         out.append(f'<text x="{left - 8}" y="{y(v) + 4:.1f}" class="axis" text-anchor="end">'
                    f'{escape(rupees(v))}</text>')

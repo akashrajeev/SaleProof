@@ -64,7 +64,8 @@
     {% for o in offers %}
       <tr class="{{ '' if o.trusted else 'untrusted' }}">
         <td class="mono">{{ o.day[8:10] }}-{{ o.day[5:7] }}</td>
-        <td>{% if o.url %}<a href="{{ o.url }}" rel="nofollow noopener" target="_blank">{{ o.store }}</a>{% else %}{{ o.store }}{% endif %}{% if not o.trusted %} <span class="muted small">(not used)</span>{% endif %}</td>
+        <td>{% if o.url %}<a href="{{ o.url }}" rel="nofollow noopener" target="_blank">{{ o.store }}</a>{% else %}{{ o.store }}{% endif %}{% if not o.trusted %} <span class="muted small">(not used)</span>{% endif %}
+          <div class="small muted variant">{{ o.title[:70] }}</div></td>
         <td class="c-num mono">{{ o.price|rupees }}</td>
         <td class="c-num mono">{{ o.mrp|rupees if o.mrp else '—' }}</td>
         <td class="c-num mono">{{ ('%.0f%%'|format(o.claimed_pct)) if o.claimed_pct else '—' }}</td>

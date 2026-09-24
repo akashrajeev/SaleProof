@@ -78,6 +78,9 @@ PARSERS = {"amazon": parse_amazon, "google_shopping": parse_google_shopping,
 
 
 def category_for(payload: dict) -> str:
+    stored = (payload.get("saleproof") or {}).get("category")
+    if stored:
+        return stored
     q = (payload.get("search_parameters") or {}).get("k") or \
         (payload.get("search_parameters") or {}).get("q") or ""
     q = q.lower()
@@ -85,7 +88,9 @@ def category_for(payload: dict) -> str:
                       ("headphone", "Audio"), ("tv", "TVs"), ("watch", "Wearables")):
         if word in q:
             return cat
-    return "Phones" if "5g" in q else "Other"
+    if "5g" in q or any(w in q for w in ("iphone", "galaxy", "pixel", "redmi", "oneplus")):
+        return "Phones"
+    return "Other"
 
 
 KEY_BY_MODEL = {"Phones"}  # phones: colours of one model share a history. Others: per listing.

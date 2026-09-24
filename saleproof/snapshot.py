@@ -30,7 +30,7 @@ def run(settings: Settings, jobs: list[Job] | None = None, client: SerpClient | 
     for job in jobs or daily_jobs():
         cached = client.archive_path(job.engine, job.params).exists()
         try:
-            payload = client.search(job.engine, **job.params)
+            payload = client.search(job.engine, _meta={"category": job.category}, **job.params)
         except BudgetExceeded as e:
             report.skipped.append(f"{job.label}: {e}")
             continue
